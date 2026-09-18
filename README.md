@@ -257,68 +257,7 @@ novel-continuation/
 
 ---
 
-## 自己构建
 
-成品已经提交在仓库里，**只想用的话不需要构建**。
-
-只有在你想改源码时才需要：
-
-```bash
-node tools/build.mjs
-```
-
-它会依次做三件事，任何一步失败就中断，不会写出半成品：
-
-1. `extract.mjs` — 从上游页面精确抽取（全部是精确字符串替换，命中数不符即报错），植入独立运行能力
-2. `offline.mjs` — 把 `tools/vendor/` 里的三个依赖内联进 HTML
-3. `syntax-check.mjs` — 语法 + Vue 模板标签闭合 + 45 项结构断言
-
-> `extract.mjs` 默认从上一次的上游工程路径读取源页面。换机器时用环境变量指定：
-> `UPSTREAM_PAGE=/path/to/continue/index.html node tools/build.mjs`
-> 改 `tools/inline-*.{js,html}` 也可以，那三个片段是独立于上游的。
-
-依赖版本：Vue 3（`vue.global.prod.js`）、Tailwind Play CDN、daisyUI 4.7.2。
-
-### 发布到 GitHub
-
-`tools/publish.mjs` 只用 `api.github.com` 的 REST 接口完成建仓、上传、设置简介与话题、开启 Pages，**完全不碰 `github.com`** —— 在 `github.com:443` 被 DNS 污染 / 连接被拦的网络下，`git push` 和 `gh` 都会失败，这个脚本仍然可用。
-
-```bash
-# 1. 把勾了 repo 权限的经典 PAT 写到仓库根目录（已在 .gitignore 里）
-echo ghp_xxxxxxxx > .gh-token
-
-# 2. 发布（提交信息默认取本地 git HEAD 的主题）
-node tools/publish.mjs
-node tools/publish.mjs -m "fix: 修正某处逻辑"
-```
-
-脚本是幂等的：仓库已存在就覆盖内容，Pages 已开就更新，可以反复跑。
-
-> 有个坑：**空仓库调 Git Data API 会返回 `409 Git Repository is empty`**，blobs / trees / commits 全部不可用。脚本的解法是先用 Contents API 落一个种子提交把 `main` 建出来，再用 `force` 把分支指到真正的首个提交上——种子提交因此不可达，历史依然是干净的一条。
-
----
-
-## 测试
-
-需要本机有 Chrome 或 Edge。
-
-```bash
-# 独立版端到端：配置接口 → 导入 → 生成 → 流式续写 → 存档 → file:// 直开 → 零外部请求
-node tests/mock-server.mjs &          # 先起 Mock 接口
-node tests/standalone.test.mjs        # 48 项
-
-# 语法与结构自检
-node tests/syntax-check.mjs
-
-# 上游页面回归（需要上游工程）
-node tests/upstream.test.mjs          # 76 项
-```
-
-测试方式是 **Mock OpenAI 兼容接口 + headless Chrome CDP 驱动**，断言的是真行为而不是快照：正文是不是真的在逐段增长（验证流式）、点了按钮状态有没有真的写回、控制台有没有报错、打开页面时有没有对外发请求。
-
-覆盖到的边界：脏 JSON 容错（中文逗号 + 尾逗号）、大纲优化稿替换与还原、罗盘全字段解析、停滞自检与强制推进注入、100% 文本重合被抓到、弧线节拍注入、无罗盘时优雅降级、存档落盘与恢复、401 / 404 / 连不上三种错误文案。
-
----
 
 ## 常见问题
 
