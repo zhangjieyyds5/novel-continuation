@@ -1,0 +1,21 @@
+# 测试日志（每次跑测试都会重新生成）
+tests/*.log
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 依赖（本仓库不需要 npm install，构建与测试只用 Node 内置模块）
+node_modules/
+
+# 临时产物
+*.tmp
+_chrome_*/
+
+# 一次性凭据，绝不入库
+.gh-token
+.gh-token.txt
+.env

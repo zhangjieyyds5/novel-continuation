@@ -1,0 +1,57 @@
+        <!-- 接口设置弹窗（独立版） -->
+        <div v-if="apiSetupOpen" class="modal modal-open" role="dialog">
+            <div class="modal-box max-w-xl">
+                <h3 class="font-bold text-base mb-1">接口设置</h3>
+                <p class="text-xs text-base-content/55 leading-relaxed mb-4">
+                    填一个 OpenAI 兼容的接口，例如 <span class="font-mono">https://api.deepseek.com/v1</span>。
+                    设置只保存在这台电脑的浏览器里，除了发给你填的那个服务，不会上传到任何地方。
+                </p>
+
+                <div class="flex flex-col gap-3">
+                    <label class="form-control">
+                        <span class="panel-label">API 地址</span>
+                        <input v-model.trim="apiDraft.url" type="text" spellcheck="false" autocomplete="off"
+                            class="input input-bordered input-sm h-9 text-xs font-mono"
+                            placeholder="https://api.openai.com/v1">
+                        <span class="panel-note">填到 /v1 就行，也可以直接填完整的 chat/completions 地址</span>
+                    </label>
+
+                    <label class="form-control">
+                        <span class="panel-label">API Key</span>
+                        <div class="flex items-center gap-2">
+                            <input v-model.trim="apiDraft.key" :type="apiKeyVisible ? 'text' : 'password'"
+                                spellcheck="false" autocomplete="off"
+                                class="input input-bordered input-sm h-9 text-xs font-mono flex-1" placeholder="sk-...">
+                            <button type="button" class="btn btn-ghost btn-sm h-9 px-2 shrink-0"
+                                @click="apiKeyVisible = !apiKeyVisible">{{ apiKeyVisible ? '隐藏' : '显示' }}</button>
+                        </div>
+                    </label>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <label v-for="slot in modelSlots" :key="slot.key" class="form-control">
+                            <span class="panel-label">{{ slot.label }}</span>
+                            <input v-model.trim="apiDraft[slot.key]" type="text" spellcheck="false" autocomplete="off"
+                                class="input input-bordered input-sm h-9 text-xs font-mono" placeholder="模型名">
+                        </label>
+                    </div>
+                    <div class="panel-note -mt-1">三档模型名只填一个也能用，顶栏下拉就是在它们之间切换。</div>
+
+                    <div v-if="apiTestResult" class="rounded-lg px-3 py-2 text-xs leading-relaxed break-words"
+                        :class="apiTestResult.startsWith('连接成功') ? 'bg-success/15 text-success' : 'bg-error/15 text-error'">
+                        {{ apiTestResult }}
+                    </div>
+                </div>
+
+                <div class="modal-action">
+                    <button type="button" class="btn btn-ghost btn-sm mr-auto" @click="clearApiSettings"
+                        :disabled="testingApi">清除</button>
+                    <button type="button" class="btn btn-ghost btn-sm" @click="testApiConnection" :disabled="testingApi">
+                        <span v-if="testingApi" class="loading loading-spinner loading-xs"></span>
+                        {{ testingApi ? '测试中' : '测试连接' }}
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-sm" @click="apiSetupOpen = false">取消</button>
+                    <button type="button" class="btn btn-primary btn-sm text-white" @click="saveApiSettings">保存</button>
+                </div>
+            </div>
+            <div class="modal-backdrop bg-black/40" @click="apiSetupOpen = false"></div>
+        </div>
