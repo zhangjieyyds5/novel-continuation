@@ -7,7 +7,7 @@
 单文件 · 零依赖 · 双击即用 · API Key 只留在你自己的浏览器里
 
 > [!NOTE]
-> 本仓库的全部代码（含构建脚本与测试）**均由 AI 生成**，仅供学习与交流使用。
+> 本仓库的全部代码、文本（含构建脚本与测试）**均由 AI 生成**，仅供学习与交流使用。
 
 [![License](https://img.shields.io/badge/license-MIT-3da639?style=flat-square)](LICENSE)
 [![Single File](https://img.shields.io/badge/build-single%20file-2f81f7?style=flat-square)](#项目结构)
