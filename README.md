@@ -234,6 +234,7 @@ novel-continuation/
 │   ├── inline-client.js             # 内联进去的轻量 API 客户端
 │   ├── inline-setup.js              # 内联进去的独立版配置逻辑
 │   ├── inline-modal.html            # 内联进去的「接口设置」弹窗
+│   ├── publish.mjs                  # 发布到 GitHub（纯 REST，绕开被拦的 github.com）
 │   └── vendor/                      # 被内联的三个前端依赖
 └── tests/
     ├── standalone.test.mjs          # 独立版端到端（HTTP + file://）48 项
@@ -277,6 +278,23 @@ node tools/build.mjs
 > 改 `tools/inline-*.{js,html}` 也可以，那三个片段是独立于上游的。
 
 依赖版本：Vue 3（`vue.global.prod.js`）、Tailwind Play CDN、daisyUI 4.7.2。
+
+### 发布到 GitHub
+
+`tools/publish.mjs` 只用 `api.github.com` 的 REST 接口完成建仓、上传、设置简介与话题、开启 Pages，**完全不碰 `github.com`** —— 在 `github.com:443` 被 DNS 污染 / 连接被拦的网络下，`git push` 和 `gh` 都会失败，这个脚本仍然可用。
+
+```bash
+# 1. 把勾了 repo 权限的经典 PAT 写到仓库根目录（已在 .gitignore 里）
+echo ghp_xxxxxxxx > .gh-token
+
+# 2. 发布（提交信息默认取本地 git HEAD 的主题）
+node tools/publish.mjs
+node tools/publish.mjs -m "fix: 修正某处逻辑"
+```
+
+脚本是幂等的：仓库已存在就覆盖内容，Pages 已开就更新，可以反复跑。
+
+> 有个坑：**空仓库调 Git Data API 会返回 `409 Git Repository is empty`**，blobs / trees / commits 全部不可用。脚本的解法是先用 Contents API 落一个种子提交把 `main` 建出来，再用 `force` 把分支指到真正的首个提交上——种子提交因此不可达，历史依然是干净的一条。
 
 ---
 
